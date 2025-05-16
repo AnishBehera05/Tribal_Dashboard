@@ -9,6 +9,8 @@ import json
 from fpdf import FPDF
 import tempfile
 import plotly.graph_objects as go
+import ollama
+import re
 
 state_csv = "State_Level_Tribal_Health_Factsheet_India_NFHS_V.csv"
 district_csv = "District_Level_Tribal_Health_Factsheet_India_NFHS_V.csv"
@@ -19,6 +21,10 @@ with open("NFHS5_statefiles.geojson", "r") as f:
     geojson_states = json.load(f)
 with open("NFHS5_districtlevel.geojson", "r") as f:
     geojson_districts = json.load(f)
+
+df_district["district_id"] = df_district["district_id"].astype(str).str.strip().str.title()
+for feature in geojson_districts["features"]:
+    feature["properties"]["district_id"] = str(feature["properties"]["district_id"]).strip().title()
 
 state_data = {state: df_state[df_state["state_acronym"] == state] for state in df_state["state_acronym"].unique()}
 state_name_mapping = df_state[['state_acronym', 'state_name']].drop_duplicates().set_index('state_acronym')['state_name'].to_dict()
@@ -101,8 +107,7 @@ app.layout = html.Div([
             ),
             dbc.Col(
                 html.Div([
-                    dbc.Button("⬅ Back to State View", id="back-button", color="primary", className="me-2"),
-                    dbc.Button("⬅ Back to Country View", id="back-country-button", color="primary")
+                    dbc.Button("Reset", id="reset", color="primary")
                 ], className="d-flex justify-content-end"),
                 width=4
             )
@@ -119,7 +124,7 @@ app.layout = html.Div([
             ], width=6),
             dbc.Col(
                 html.Div([
-                    dbc.Button("📥 Download Plots", id="download-btn", color="success")
+                    dbc.Button("Download", id="download-btn", color="success")
                 ], className="d-flex justify-content-end"),
                 width=6
             )
@@ -129,8 +134,8 @@ app.layout = html.Div([
 
         html.H3(id='selected-state-name', style={'display': 'none'}),
 
-        dcc.Store(id='clicked-state-store'),
         dcc.Download(id="download-figures"),
+        dcc.Store(id='clicked-state-store'),
         html.Div(id='visualization-panel'),
 
     ], fluid=True),
@@ -160,33 +165,65 @@ app.layout = html.Div([
     State('category-selection-type', 'value'),
     State('indicator-category-dropdown', 'value'),
     State({'type': 'indicator-dropdown', 'index': ALL}, 'value'),
-    State('clicked-state-store', 'data'),
     State('state-selection', 'value'),
     prevent_initial_call=True
 )
-def download_all_figures(n_clicks, active_tab, hh_type, category, indicators, clicked_state, selected_state):
+def download_all_figures(n_clicks, active_tab, hh_type, category, indicators, selected_state):
     indicators = indicators + [None] * (4 - len(indicators))
-    grouped_figs = {}
-
-    grouped_figs["Maps"] = list(update_all_maps(hh_type, category, indicators, clicked_state, selected_state))
-    grouped_figs["Bar Charts"] = list(update_bar_plots(hh_type, category, indicators, clicked_state, selected_state))
-    grouped_figs["Violin Plots"] = list(update_violin_plots(hh_type, category, indicators, selected_state))
-    grouped_figs["Bubble Plot"] = [update_combined_bubble(hh_type, category, indicators, clicked_state)]
 
     pdf = FPDF(orientation="L", unit="mm", format="A4")
     width, height = 297, 210
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        for section, figs in grouped_figs.items():
+        if active_tab == "map-tab":
+            figs = update_all_maps(hh_type, category, indicators, selected_state)
             for i, fig in enumerate(figs):
                 if fig:
-                    img_path = f"{tmpdir}/{section.replace(' ', '_')}_{i}.png"
+                    img_path = f"{tmpdir}/Map_{i+1}.png"
                     fig.write_image(img_path, width=900, height=600)
-
                     pdf.add_page()
                     pdf.set_font("Arial", "B", 14)
-                    pdf.cell(0, 10, f"{section} - {i+1}", ln=True, align="C")
+                    pdf.cell(0, 10, f"Map - {indicators[i]}", ln=True, align="C")
                     pdf.image(img_path, x=10, y=20, w=277)
+
+        elif active_tab == "bar-tab":
+            figs = update_bar_plots(hh_type, category, indicators, None, selected_state)
+            for i, fig in enumerate(figs):
+                if fig:
+                    img_path = f"{tmpdir}/Bar_{i+1}.png"
+                    fig.write_image(img_path, width=900, height=600)
+                    pdf.add_page()
+                    pdf.set_font("Arial", "B", 14)
+                    pdf.cell(0, 10, f"Bar Chart - {indicators[i]}", ln=True, align="C")
+                    pdf.image(img_path, x=10, y=20, w=277)
+
+        elif active_tab == "violin-tab":
+            figs = update_violin_plots(hh_type, category, indicators, selected_state)
+            for i, fig in enumerate(figs):
+                if fig:
+                    img_path = f"{tmpdir}/Violin_{i+1}.png"
+                    fig.write_image(img_path, width=800, height=500)
+                    pdf.add_page()
+                    pdf.set_font("Arial", "B", 14)
+                    pdf.cell(0, 10, f"Violin Plot - {indicators[i]}", ln=True, align="C")
+                    pdf.image(img_path, x=10, y=20, w=277)
+
+        elif active_tab == "bubble-tab":
+            fig = update_combined_bubble(hh_type, category, indicators, selected_state)
+            if fig:
+                img_path = f"{tmpdir}/Bubble_Plot.png"
+                fig.write_image(img_path, width=900, height=500)
+
+                legend_text = f"""X-Axis: {indicators[0]}\nY-Axis: {indicators[1]}\nSize: {indicators[2]}\nColor: {indicators[3]}"""
+
+                pdf.add_page()
+                pdf.set_font("Arial", "B", 16)
+                pdf.cell(0, 10, "Bubble Plot", ln=True, align="C")
+                pdf.set_font("Arial", "", 10)
+                for line in legend_text.split("\n"):
+                    pdf.cell(0, 8, line, ln=True, align="C")
+
+                pdf.image(img_path, x=10, y=50, w=277)
 
         pdf_bytes = pdf.output(dest="S").encode('latin1')
         return dcc.send_bytes(pdf_bytes, filename="Tribal_Health_Dashboard.pdf")
@@ -236,49 +273,20 @@ def update_indicators(selected_state_acronym, selected_category, existing_values
     return dbc.Row(dropdowns, justify="center", className="mb-3")
 
 @app.callback(
-    Output('clicked-state-store', 'data'),
-    [Input({'type': 'map', 'index': ALL}, 'clickData'),
-     Input('state-selection', 'value'),
-     Input('back-button', 'n_clicks'),
-     Input('back-country-button', 'n_clicks')],
-    State('clicked-state-store', 'data'),
-    prevent_initial_call=True
-)
-def update_click_store(map_clicks, selected_state, back_clicks, country_clicks, stored_data):
-    triggered = ctx.triggered_id
-
-    if triggered in ["back-button", "back-country-button"]:
-        return None
-
-    for click in map_clicks:
-        if click and 'location' in click['points'][0]:
-            loc = click['points'][0]['location']
-            if loc in state_data:
-                return loc
-
-    if triggered == "state-selection" and stored_data:
-        return None
-
-    return stored_data
-
-@app.callback(
     Output('state-selection', 'value'),
-    Input('back-country-button', 'n_clicks'),
+    Input('reset', 'n_clicks'),
     prevent_initial_call=True
 )
-def clear_state_selection(n):
+def reset_to_country(n_clicks):
     return None
 
 @app.callback(
     Output('selected-state-name', 'children'),
-    [Input('clicked-state-store', 'data'),
-     Input('state-selection', 'value')]
+     Input('state-selection', 'value')
 )
-def update_title(clicked_state, selected_state):
-    if clicked_state:
-        return f"District-level View: {state_name_mapping.get(clicked_state, clicked_state)}"
-    elif selected_state:
-        return f"State-level View: {state_name_mapping.get(selected_state, selected_state)}"
+def update_title(selected_state):
+    if selected_state:
+        return f"District-level View: {state_name_mapping.get(selected_state, selected_state)}"
     return "India-level View"
 
 @app.callback(
@@ -331,7 +339,7 @@ def update_violin_plots(hh_type, category, indicators, selected_state):
             return px.scatter(title=f"{indicator} - No Data")
 
         sub_df['x_dummy'] = ''
-        label_col = 'district_name' if selected_state else 'state_name'
+        label_col = 'district_id' if selected_state else 'state_name'
         indicator_type = indicator_type_map.get(indicator, "Neutral")
 
         colors = []
@@ -398,23 +406,23 @@ def update_violin_plots(hh_type, category, indicators, selected_state):
     Input('category-selection-type', 'value'),
     Input('indicator-category-dropdown', 'value'),
     Input({'type': 'indicator-dropdown', 'index': ALL}, 'value'),
-    Input('clicked-state-store', 'data')
+    Input('state-selection', 'value')
 )
-def update_combined_bubble(hh_type, category, indicators, clicked_state):
+def update_combined_bubble(hh_type, category, indicators, selected_state):
     indicators = [i for i in indicators if i]
     if len(indicators) < 4:
         return px.scatter(title="Please select 4 indicators for bubble chart.")
 
     ind_x, ind_y, ind_size, ind_color = indicators[:4]
 
-    use_district = clicked_state is not None
-    df = df_district[df_district['state_acronym'] == clicked_state] if use_district else df_state
+    use_district = selected_state is not None
+    df = df_district[df_district['state_acronym'] == selected_state] if use_district else df_state
     if category:
         df = df[df['category'] == category]
 
     df = df[df['indicator_name'].isin([ind_x, ind_y, ind_size, ind_color])]
     df[hh_type] = pd.to_numeric(df[hh_type], errors='coerce')
-    label_col = 'district_name' if use_district else 'state_name'
+    label_col = 'district_id' if use_district else 'state_name'
     if label_col not in df.columns:
         return px.scatter(title=f"{label_col} column missing")
 
@@ -438,53 +446,177 @@ def update_combined_bubble(hh_type, category, indicators, clicked_state):
     return fig
 
 @app.callback(
-    [Output('map-1', 'figure'), Output('map-2', 'figure'),
-     Output('map-3', 'figure'), Output('map-4', 'figure')],
+    [Output({'type': 'map', 'index': i}, 'figure') for i in range(1, 5)],
     [Input('category-selection-type', 'value'),
      Input('indicator-category-dropdown', 'value'),
      Input({'type': 'indicator-dropdown', 'index': ALL}, 'value'),
-     Input('clicked-state-store', 'data'),
      Input('state-selection', 'value')]
 )
-def update_all_maps(selected_data, selected_cat, indicator_values, clicked_state, selected_state):
-    indicators = indicator_values + [None] * (4 - len(indicator_values))
-    use_district = clicked_state is not None
-    df = df_district[df_district['state_acronym'] == clicked_state] if use_district else df_state
-    geojson = geojson_districts if use_district else geojson_states
-    location_col = "district_id" if use_district else "state_acronym"
-    feature_key = "properties.district_id" if use_district else "properties.state_acronym"
+def update_all_maps(hh_type, category, indicators, selected_state):
+    indicators = indicators + [None] * (4 - len(indicators))
+    
+    if selected_state:
+        # District-level view
+        return [generate_district_map(hh_type, category, ind, selected_state) for ind in indicators]
+    else:
+        # State-level view
+        return [generate_state_map(hh_type, category, ind) for ind in indicators]
 
-    def generate_map(indicator):
-        if not indicator:
-            return px.scatter(title="No Indicator Selected")
+def generate_state_map(hh_type, category, indicator):
+    if not indicator:
+        return px.scatter(title="No Indicator Selected")
 
-        data = df[df["indicator_name"] == indicator]
-        data[location_col] = data[location_col].astype(str)
-        data[selected_data] = pd.to_numeric(data[selected_data], errors='coerce')
+    # Filter the state-level data
+    df = df_state.copy()
+    if category:
+        df = df[df['category'] == category]
+    df = df[df['indicator_name'] == indicator]
+    df[hh_type] = pd.to_numeric(df[hh_type], errors='coerce')
+    df["state_acronym"] = df["state_acronym"].astype(str)
 
-        if data.empty:
-            return px.scatter(title=f"{indicator} - No Data")
+    # All state acronyms from GeoJSON
+    geo_ids = [f["properties"]["state_acronym"] for f in geojson_states["features"]]
+    all_states = pd.DataFrame({"state_acronym": geo_ids})
 
-        fig = px.choropleth(
-            data,
-            geojson=geojson,
-            locations=location_col,
-            color=selected_data,
-            featureidkey=feature_key,
-            color_continuous_scale="Viridis",
-            title=indicator
-        )
+    # Merge with data, handle missing values
+    merged = pd.merge(all_states, df[["state_acronym", hh_type]], on="state_acronym", how="left")
+    merged["plot_value"] = merged[hh_type].fillna(-1)
 
-        fig.update_geos(fitbounds="locations", visible=False)
-        fig.update_layout(margin={"r": 0, "t": 30, "l": 0, "b": 0}, showlegend=False)
-        return fig
-
-    return (
-        generate_map(indicators[0]),
-        generate_map(indicators[1]),
-        generate_map(indicators[2]),
-        generate_map(indicators[3]),
+    # Hover text
+    acronym_to_name = {
+        f["properties"]["state_acronym"]: f["properties"].get("state_name", f["properties"]["state_acronym"])
+        for f in geojson_states["features"]
+    }
+    merged["hover_text"] = merged["state_acronym"].apply(
+        lambda x: f"{acronym_to_name.get(x, x)}<br>Value: {merged.loc[merged['state_acronym'] == x, hh_type].values[0]:.1f}"
+        if pd.notna(merged.loc[merged['state_acronym'] == x, hh_type].values[0])
+        else f"{acronym_to_name.get(x, x)}<br>Value: NA"
     )
+
+    # Color scale range
+    valid_vals = merged["plot_value"].replace(-1, pd.NA).dropna()
+    color_range = (valid_vals.min(), valid_vals.max()) if not valid_vals.empty else (0, 100)
+
+    # Map center (India default)
+    center_lat, center_lon, zoom_level = 22, 80, 3
+
+    # Create choropleth mapbox
+    fig = px.choropleth_mapbox(
+        merged,
+        geojson=geojson_states,
+        locations="state_acronym",
+        featureidkey="properties.state_acronym",
+        color="plot_value",
+        color_continuous_scale=[[0.0, "gray"], [0.01, "#c6dbef"], [1.0, "#084594"]],
+        range_color=color_range,
+        mapbox_style="carto-positron",
+        center={"lat": center_lat, "lon": center_lon},
+        zoom=zoom_level,
+        title=None
+    )
+
+    fig.update_traces(
+        hovertemplate="%{customdata}<extra></extra>",
+        customdata=merged["hover_text"],
+        marker_line_color='black',
+        marker_line_width=0.5
+    )
+
+    fig.update_layout(
+        margin={"r": 0, "t": 30, "l": 0, "b": 0},
+        coloraxis_colorbar=dict(title=hh_type),
+        paper_bgcolor="white",
+        plot_bgcolor="white"
+    )
+    return fig
+
+def generate_district_map(hh_type, category, indicator, selected_state):
+    if not indicator:
+        return px.scatter(title="No Indicator Selected")
+
+    # Filter the district data
+    df = df_district[df_district['state_acronym'] == selected_state].copy()
+    if category:
+        df = df[df['category'] == category]
+    df = df[df['indicator_name'] == indicator]
+    df[hh_type] = pd.to_numeric(df[hh_type], errors='coerce')
+    df["district_id"] = df["district_id"].astype(str)
+
+    # Filter GeoJSON to only selected state's districts
+    filtered_features = [
+        f for f in geojson_districts["features"]
+        if f["properties"]["state_acronym"] == selected_state
+    ]
+    filtered_geojson = {
+        "type": "FeatureCollection",
+        "features": filtered_features
+    }
+
+    # All district IDs for the selected state from GeoJSON
+    geo_ids = [str(f["properties"]["district_id"]) for f in filtered_features]
+    all_districts = pd.DataFrame({"district_id": geo_ids})
+
+    # Merge data and fill missing values
+    merged = pd.merge(all_districts, df[["district_id", hh_type]], on="district_id", how="left")
+    merged["plot_value"] = merged[hh_type].fillna(-1)
+
+    # Hover text
+    id_to_name = {
+        str(f["properties"]["district_id"]): f["properties"].get("district_name", "Unknown")
+        for f in filtered_features
+    }
+    merged["hover_text"] = merged["district_id"].apply(
+        lambda x: f"{id_to_name.get(x, 'Unknown')}<br>Value: {merged.loc[merged['district_id'] == x, hh_type].values[0]:.1f}"
+        if pd.notna(merged.loc[merged['district_id'] == x, hh_type].values[0])
+        else f"{id_to_name.get(x, 'Unknown')}<br>Value: NA"
+    )
+
+    # Compute color scale range
+    valid_vals = merged["plot_value"].replace(-1, pd.NA).dropna()
+    color_range = (valid_vals.min(), valid_vals.max()) if not valid_vals.empty else (0, 100)
+
+    # Set Mapbox center and zoom based on state geometry
+    center_lat, center_lon, zoom_level = 22, 80, 3
+    for feature in geojson_states["features"]:
+        if feature["properties"]["state_acronym"] == selected_state:
+            coords = feature["geometry"]["coordinates"]
+            flat_coords = [pt for polygon in coords for pt in polygon[0]] if feature["geometry"]["type"] == "MultiPolygon" else coords[0]
+            lats = [lat for lon, lat in flat_coords]
+            lons = [lon for lon, lat in flat_coords]
+            center_lat = sum(lats) / len(lats)
+            center_lon = sum(lons) / len(lons)
+            zoom_level = 5
+            break
+
+    # Create choropleth mapbox
+    fig = px.choropleth_mapbox(
+        merged,
+        geojson=filtered_geojson,
+        locations="district_id",
+        featureidkey="properties.district_id",
+        color="plot_value",
+        color_continuous_scale=[[0.0, "gray"], [0.01, "#fee0d2"], [1.0, "#de2d26"]],
+        range_color=color_range,
+        mapbox_style="carto-positron",
+        center={"lat": center_lat, "lon": center_lon},
+        zoom=zoom_level,
+        title=None
+    )
+
+    fig.update_traces(
+        hovertemplate="%{customdata}<extra></extra>",
+        customdata=merged["hover_text"],
+        marker_line_color='black',
+        marker_line_width=0.5
+    )
+
+    fig.update_layout(
+        margin={"r": 0, "t": 30, "l": 0, "b": 0},
+        coloraxis_colorbar=dict(title=hh_type),
+        paper_bgcolor="white",
+        plot_bgcolor="white"
+    )
+    return fig
 
 @app.callback(
     [Output('plot-1', 'figure'), Output('plot-2', 'figure'),
@@ -518,7 +650,7 @@ def update_bar_plots(selected_data, selected_cat, indicator_values, clicked_stat
         df['Non-ST'] = pd.to_numeric(df['Non-ST'], errors='coerce')
         df['Total'] = pd.to_numeric(df['Total'], errors='coerce')
 
-        x = df['district_name'] if selected_state else df['state_name']
+        x = df['district_id'] if selected_state else df['state_name']
 
         if selected_data == 'Total':
             fig = go.Figure()
@@ -623,11 +755,86 @@ def update_bubble_legend(indicators):
 
     return html.Div([
         html.H6("Legend", className="fw-bold"),
-        html.P(f"🔹 X-Axis: {format_label(ind_x)}"),
-        html.P(f"🔹 Y-Axis: {format_label(ind_y)}"),
-        html.P(f"🔹 Bubble Size: {format_label(ind_size)}"),
-        html.P(f"🔹 Bubble Color: {format_label(ind_color)}"),
+        html.P(f"X-Axis: {format_label(ind_x)}"),
+        html.P(f"Y-Axis: {format_label(ind_y)}"),
+        html.P(f"Bubble Size: {format_label(ind_size)}"),
+        html.P(f"Bubble Color: {format_label(ind_color)}"),
     ])
+
+def get_outlier_summary(df, indicators, hh_type="Total"):
+    summary_lines = []
+    for ind in indicators:
+        sub = df[df['indicator_name'] == ind]
+        sub[hh_type] = pd.to_numeric(sub[hh_type], errors='coerce')
+        sorted_df = sub.sort_values(by=hh_type)
+        low_outlier = sorted_df.iloc[0] if not sorted_df.empty else None
+        high_outlier = sorted_df.iloc[-1] if not sorted_df.empty else None
+
+        if low_outlier is not None and pd.notna(low_outlier[hh_type]):
+            summary_lines.append(f"Lowest for '{ind}': {low_outlier['state_name']} ({low_outlier[hh_type]:.1f}%)")
+        if high_outlier is not None and pd.notna(high_outlier[hh_type]):
+            summary_lines.append(f"Highest for '{ind}': {high_outlier['state_name']} ({high_outlier[hh_type]:.1f}%)")
+    return "\n\n".join(summary_lines)
+
+def generate_llm_prompt_from_filters(df, selected_state, selected_category, indicators, level):
+    if df.empty:
+        return "No data available to analyze.", None
+
+    df = df.copy()
+
+    if 'district_id' in df.columns:
+        df = df[['state_name', 'district_id', 'indicator_name', 'ST', 'Non-ST', 'Total']]
+    else:
+        df = df[['state_name', 'indicator_name', 'ST', 'Non-ST', 'Total']]
+
+    location = f"districts within {selected_state}" if level == "district" else "states across India"
+    indicator_text = ", ".join(indicators) if indicators else "selected indicators"
+    category_text = f"under the category '{selected_category}'" if selected_category else "across all categories"
+
+    def get_outlier_summary(df, indicators, hh_type="Total"):
+        summary_lines = []
+        for ind in indicators:
+            sub = df[df['indicator_name'] == ind]
+            sub[hh_type] = pd.to_numeric(sub[hh_type], errors='coerce')
+            sorted_df = sub.sort_values(by=hh_type)
+            if not sorted_df.empty:
+                low = sorted_df.iloc[0]
+                high = sorted_df.iloc[-1]
+                if pd.notna(low[hh_type]):
+                    summary_lines.append(f"Lowest for '{ind}': {low['state_name']} ({low[hh_type]:.1f}%)")
+                if pd.notna(high[hh_type]) and high['state_name'] != low['state_name']:
+                    summary_lines.append(f"Highest for '{ind}': {high['state_name']} ({high[hh_type]:.1f}%)")
+        return "\n".join(summary_lines)
+
+    outlier_summary = get_outlier_summary(df, indicators)
+
+    prompt = f"""
+You are a public health data analyst reviewing NFHS survey data from {location}.
+
+The data contains values for {indicator_text}, {category_text}, disaggregated by ST, Non-ST, and Total populations.
+
+Your task:
+- For each indicator, identify states with unusually high or low values (i.e., outliers).
+- Clearly name the state and value. Focus on Total unless ST/Non-ST differences are striking.
+- Briefly explain why each state is an outlier using only visible trends in the data (e.g., gaps between ST and Non-ST).
+- Give one actionable, state-specific policy recommendation per outlier.
+
+Outlier Summary:
+{outlier_summary}
+
+Instructions:
+- Avoid guessing causes not evident in the data.
+- Use plain language. Avoid jargon or fabricated terms.
+- Do not summarize the full dataset. Focus only on outliers.
+""".strip()
+
+    refine_prompt = (
+        "Now refine the insights by explaining possible socio-economic or demographic reasons for the outliers, "
+        "and tailor the recommendations more specifically for tribal vs non-tribal populations in those states."
+    )
+
+    return prompt, refine_prompt
+
 
 @app.callback(
     Output("main-tabs", "data"),
@@ -649,10 +856,68 @@ def switch_tab(*clicks):
 @app.callback(
     Output('visualization-panel', 'children'),
     [Input('main-tabs', 'data'),
-     Input({'type': 'indicator-dropdown', 'index': ALL}, 'value')]
+     Input({'type': 'indicator-dropdown', 'index': ALL}, 'value'),
+     Input('state-selection', 'value'),
+     Input('indicator-category-dropdown', 'value'),
+     Input('category-selection-type', 'value')]
 )
-def render_visualization_panel(tab, indicators):
+def render_visualization_panel(tab, indicators, selected_state, selected_category, hh_type):
     indicators = indicators + [None] * (4 - len(indicators))
+    valid_indicators = [ind for ind in indicators if ind]
+
+    # Select data
+    df = df_district[df_district['state_acronym'] == selected_state] if selected_state else df_state
+    if selected_category:
+        df = df[df['category'] == selected_category]
+    df = df[df['indicator_name'].isin(valid_indicators)]
+    df[hh_type] = pd.to_numeric(df[hh_type], errors='coerce')
+
+    level = "district" if selected_state else "state"
+
+    # Generate agentic prompts
+    base_prompt, follow_up_prompt = generate_llm_prompt_from_filters(
+        df=df,
+        selected_state=state_name_mapping.get(selected_state, selected_state) if selected_state else None,
+        selected_category=selected_category,
+        indicators=valid_indicators,
+        level=level
+    )
+
+    def remove_duplicate_heading(text):
+        lines = text.strip().splitlines()
+        if len(lines) >= 2 and lines[0].strip().lower() == lines[1].strip().lower():
+            return "\n".join(lines[1:]).strip()
+        return text.strip()
+
+    def highlight_regions(text):
+        state_names = df_state['state_name'].unique().tolist()
+        district_names = df_district['district_id'].unique().tolist()
+        for name in sorted(state_names + district_names, key=len, reverse=True):
+            text = re.sub(fr"\b{re.escape(name)}\b", f"**{name}**", text)
+        return text
+
+    if not base_prompt:
+        llm_text_cleaned = "No data available to analyze."
+        followup_text_cleaned = ""
+    else:
+        try:
+            chat_msgs = [{"role": "user", "content": base_prompt}]
+            insights_response = ollama.chat(model="deepseek-r1:1.5b", messages=chat_msgs, options={"temperature": 1.5})
+            insights_text = insights_response["message"]["content"]
+
+            if follow_up_prompt:
+                chat_msgs += [insights_response["message"], {"role": "user", "content": follow_up_prompt}]
+                actions_response = ollama.chat(model="deepseek-r1:1.5b", messages=chat_msgs, options={"temperature": 1.5})
+                actions_text = actions_response["message"]["content"]
+            else:
+                actions_text = ""
+
+        except Exception as e:
+            insights_text = f"Error fetching AI Insights: {str(e)}"
+            actions_text = ""
+
+        llm_text_cleaned = highlight_regions(remove_duplicate_heading(re.sub(r"<think>.*?</think>", "", insights_text, flags=re.DOTALL)))
+        followup_text_cleaned = highlight_regions(remove_duplicate_heading(re.sub(r"<think>.*?</think>", "", actions_text, flags=re.DOTALL)))
 
     def make_plot(title, fig_id):
         return dbc.Col([
@@ -672,29 +937,30 @@ def render_visualization_panel(tab, indicators):
             dcc.Loading(dcc.Graph(id=fig_id, config={"displayModeBar": False}))
         ], md=6)
 
+    plots = []
     if tab == "map-tab":
-        return html.Div([
+        plots = [
             dbc.Row([make_plot(indicators[0], {'type': 'map', 'index': 1}),
                      make_plot(indicators[1], {'type': 'map', 'index': 2})]),
             dbc.Row([make_plot(indicators[2], {'type': 'map', 'index': 3}),
                      make_plot(indicators[3], {'type': 'map', 'index': 4})])
-        ])
+        ]
     elif tab == "bar-tab":
-        return html.Div([
+        plots = [
             dbc.Row([make_plot(indicators[0], 'plot-1'),
                      make_plot(indicators[1], 'plot-2')]),
             dbc.Row([make_plot(indicators[2], 'plot-3'),
                      make_plot(indicators[3], 'plot-4')])
-        ])
+        ]
     elif tab == "violin-tab":
-        return html.Div([
+        plots = [
             dbc.Row([make_plot(indicators[0], 'violin-1'),
                      make_plot(indicators[1], 'violin-2')]),
             dbc.Row([make_plot(indicators[2], 'violin-3'),
                      make_plot(indicators[3], 'violin-4')])
-        ])
+        ]
     elif tab == "bubble-tab":
-        return dbc.Row([
+        plots = [dbc.Row([
             dbc.Col([
                 html.Div("Bubble Plot", style={
                     "fontWeight": "bold",
@@ -709,9 +975,19 @@ def render_visualization_panel(tab, indicators):
                 dcc.Loading(dcc.Graph(id='bubble-plot', config={"displayModeBar": False}))
             ], md=9),
             dbc.Col(html.Div(id='bubble-legend'), md=3)
+        ])]
+
+    return html.Div([
+        *plots,
+        html.Hr(),
+        html.Div([
+            html.H4("AI Insights (Initial)", style={"marginTop": "30px"}),
+            dcc.Markdown(llm_text_cleaned, style={"whiteSpace": "pre-wrap"}),
+            html.Br(),
+            html.H4("AI Insights (Refined)", style={"marginTop": "20px"}),
+            dcc.Markdown(followup_text_cleaned, style={"whiteSpace": "pre-wrap"})
         ])
-    else:
-        return html.Div("Unknown tab selected")
+    ])
 
 if __name__ == '__main__':
     app.run(debug=True)
