@@ -1,0 +1,30 @@
+state_id,state_name,state_acronym
+1,Jammu and Kashmir,JK
+2,Himachal Pradesh,HP
+5,Uttarakhand,UK
+8,Rajasthan,RJ
+9,Uttar Pradesh,UP
+10,Bihar,BR
+11,Sikkim,SK
+12,Arunachal Pradesh,AR
+13,Nagaland,NL
+14,Manipur,MN
+15,Mizoram,MZ
+16,Tripura,TR
+17,Meghalaya,ML
+18,Assam,AS
+19,West bengal,WB
+20,Jharkhand,JH
+21,Odisha,OD
+22,Chattisgarh,CG
+23,Madhya Pradesh,MP
+24,Gujrat,GJ
+25,Dadra and Nagar Haveli and Daman and Diu,DNHDD
+27,Maharashtra,MH
+28,Andhra Pradesh,AP
+29,Karnataka,KA
+32,Kerala,KL
+31,Lakshwadweep,LD
+35,Andaman & Nicobar,AN
+36,Telangana,TS
+37,Ladakh,LA

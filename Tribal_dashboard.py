@@ -595,7 +595,7 @@ def generate_district_map(hh_type, category, indicator, selected_state):
         locations="district_id",
         featureidkey="properties.district_id",
         color="plot_value",
-        color_continuous_scale=[[0.0, "gray"], [0.01, "#fee0d2"], [1.0, "#de2d26"]],
+        color_continuous_scale=[[0.0, "gray"], [0.01, "#c6dbef"], [1.0, "#084594"]],
         range_color=color_range,
         mapbox_style="carto-positron",
         center={"lat": center_lat, "lon": center_lon},
@@ -651,85 +651,47 @@ def update_bar_plots(selected_data, selected_cat, indicator_values, clicked_stat
         df['Total'] = pd.to_numeric(df['Total'], errors='coerce')
 
         x = df['district_id'] if selected_state else df['state_name']
+        bar_values = df[selected_data]
+        indicator_type = indicator_type_map.get(indicator, "Neutral")
 
-        if selected_data == 'Total':
-            fig = go.Figure()
+        colors = []
+        for val in bar_values:
+            if pd.isna(val):
+                colors.append('gray')
+            elif indicator_type == 'Positive':
+                if val >= 75:
+                    colors.append('green')
+                elif val >= 50:
+                    colors.append('orange')
+                else:
+                    colors.append('red')
+            elif indicator_type == 'Negative':
+                if val <= 25:
+                    colors.append('green')
+                elif val <= 50:
+                    colors.append('orange')
+                else:
+                    colors.append('red')
+            else:
+                colors.append('gray')
 
-            fig.add_trace(go.Bar(
-                x=x,
-                y=df['ST'],
-                name='ST',
-                marker_color='#1f77b4',
-                hoverinfo='none'
-            ))
+        fig = go.Figure()
 
-            fig.add_trace(go.Bar(
-                x=x,
-                y=df['Non-ST'],
-                name='Non-ST',
-                marker_color='#2ca02c',
-                hoverinfo='none'
-            ))
+        fig.add_trace(go.Bar(
+            x=x,
+            y=bar_values,
+            marker_color=colors,
+            hovertemplate="%{y:.1f}<extra></extra>"
+        ))
 
-            fig.update_traces(
-                customdata=df['Total'],
-                hovertemplate='Total: %{customdata:.1f}<extra></extra>'
-            )
-
-            fig.update_layout(
-                barmode='stack',
-                height=350,
-                xaxis_tickangle=45,
-                xaxis_title=None,
-                title=None,
-                margin={"t": 50, "b": 50},
-                showlegend=True
-            )
-
-        else:
-            fig = go.Figure()
-
-            bar_values = df[selected_data]
-            indicator_type = indicator_type_map.get(indicator, "Neutral")
-
-            colors = []
-            for val in bar_values:
-                if pd.isna(val):
-                    colors.append('gray')
-                    continue
-
-                if indicator_type == 'Positive':
-                    if val >= 75:
-                        colors.append('green')
-                    elif val >= 50:
-                        colors.append('orange')
-                    else:
-                        colors.append('red')
-                elif indicator_type == 'Negative':
-                    if val <= 25:
-                        colors.append('green')
-                    elif val <= 50:
-                        colors.append('orange')
-                    else:
-                        colors.append('red')
-                else: 
-                    colors.append('gray')
-
-            fig.add_trace(go.Bar(
-                x=x,
-                y=bar_values,
-                marker_color=colors,
-                hovertemplate="%{y:.1f}<extra></extra>"
-            ))
-
-            fig.update_layout(
-                height=350,
-                xaxis_tickangle=45,
-                xaxis_title=None,
-                title=None,
-                margin={"t": 50, "b": 50},
-                showlegend=False
-            )
+        fig.update_layout(
+            height=350,
+            xaxis_tickangle=135,
+            xaxis_title=None,
+            title=None,
+            margin={"t": 50, "b": 50},
+            showlegend=False
+        )
 
         return fig
 
@@ -741,6 +703,7 @@ def update_bar_plots(selected_data, selected_cat, indicator_values, clicked_stat
         generate_plot(indicators[2]),
         generate_plot(indicators[3]),
     )
+
 
 @app.callback(
     Output('bubble-legend', 'children'),
