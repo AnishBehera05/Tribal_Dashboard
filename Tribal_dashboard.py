@@ -42,11 +42,12 @@ app = dash.Dash(__name__, suppress_callback_exceptions=True, external_stylesheet
 app.enable_dev_tools(debug=False)
 
 config_no_buttons = {"displayModeBar": False}
-    
+
 app.layout = html.Div([
-
     dcc.Store(id='main-tabs', data='map-tab'),
+    dcc.Store(id='comparison-mode-store', data='indicator'),
 
+    # === Header ===
     html.Div([
         dbc.Container([
             dbc.Row([
@@ -75,71 +76,97 @@ app.layout = html.Div([
         'padding': '15px 20px'
     }),
 
+    # === Spacer below header ===
     html.Div(style={'height': '100px'}),
 
-    dbc.Container([
+    # === Main Content ===
+    html.Div([
+        dbc.Container([
 
-        dbc.Row([
-            dbc.Col(
-                dcc.Dropdown(
-                    id='state-selection',
-                    options=[{'label': state_name_mapping[state], 'value': state} for state in state_data.keys()],
-                    value=None,
-                    placeholder="Select a state",
-                    clearable=True
+            # === State Selector ===
+            dbc.Row([
+                dbc.Col(
+                    dcc.Dropdown(
+                        id='state-selection',
+                        options=[{'label': state_name_mapping[state], 'value': state} for state in state_data.keys()],
+                        value=None,
+                        placeholder="Select a state",
+                        clearable=True
+                    ),
+                    width=4
                 ),
-                width=4
-            ),
-            dbc.Col(
-                dcc.RadioItems(
-                    id='category-selection-type',
-                    options=[
-                        {'label': 'ST', 'value': 'ST'},
-                        {'label': 'Non-ST', 'value': 'Non-ST'},
-                        {'label': 'Total', 'value': 'Total'}
-                    ],
-                    value='Total',
-                    inline=True,
-                    labelStyle={'marginRight': '10px'}
-                ),
-                width=4,
-                style={"textAlign": "center"}
-            ),
-            dbc.Col(
-                html.Div([
-                    dbc.Button("Reset", id="reset", color="primary")
-                ], className="d-flex justify-content-end"),
-                width=4
-            )
-        ], justify="between", className="mb-3", style={"padding": "10px 0"}),
+                dbc.Col(width=8)
+            ], className="mb-2"),
 
-        dbc.Row([
-            dbc.Col([
-                dcc.Dropdown(
-                    id='indicator-category-dropdown',
-                    options=[{'label': cat, 'value': cat} for cat in sorted(df_state['category'].dropna().unique())],
-                    value='Access to Communication/Mass Media',
-                    placeholder="Select Category"
+            # === ST / Non-ST / Total Toggle ===
+            dbc.Row([
+                dbc.Col(
+                    dcc.RadioItems(
+                        id='category-selection-type',
+                        options=[
+                            {'label': 'ST', 'value': 'ST'},
+                            {'label': 'Non-ST', 'value': 'Non-ST'},
+                            {'label': 'Total', 'value': 'Total'}
+                        ],
+                        value='Total',
+                        inline=True,
+                        labelStyle={'marginRight': '10px'}
+                    ),
+                    width=12,
+                    style={"textAlign": "center"}
                 )
-            ], width=6),
-            dbc.Col(
-                html.Div([
-                    dbc.Button("Download", id="download-btn", color="success")
-                ], className="d-flex justify-content-end"),
-                width=6
+            ], className="mb-3"),
+
+            # === Reset + Download Buttons ===
+            dbc.Row([
+                dbc.Col(width=8),
+                dbc.Col(
+                    html.Div([
+                        dbc.Button("Reset", id="reset", color="primary", className="me-2"),
+                        dbc.Button("Download", id="download-btn", color="success")
+                    ], className="d-flex justify-content-end"),
+                    width=4
+                )
+            ], className="mb-3"),
+
+            # === Dynamic Category Dropdowns (Category Comparison Only) ===
+            html.Div(id='category-mode-dropdowns'),
+
+            # === Category Dropdown (Indicator Comparison Only) ===
+            html.Div(id='indicator-mode-category-dropdown', children=[
+                dbc.Row([
+                    dbc.Col([
+                        dcc.Dropdown(
+                            id='indicator-category-dropdown',
+                            options=[{'label': cat, 'value': cat} for cat in sorted(df_state['category'].dropna().unique())],
+                            value='Access to Communication/Mass Media',
+                            placeholder="Select Category"
+                        )
+                    ], width=12)
+                ], className="mb-3")
+            ]),
+
+            # === Dropdowns for Indicator or Category Comparison ===
+            html.Div(id='indicator-selectors'),
+
+            # === Hidden: Selected State Name ===
+            html.H3(id='selected-state-name', style={'display': 'none'}),
+
+            # === Download and Storage ===
+            dcc.Download(id="download-figures"),
+            dcc.Store(id='clicked-state-store'),
+
+            # === Visualization Panel + Spinner ===
+            dcc.Loading(
+                id="llm-loader",
+                type="circle",
+                color="#2C3E50",
+                children=html.Div(id='visualization-panel', style={"minHeight": "300px"})
             )
-        ], justify="between", className="mb-3"),
+        ], fluid=True)
+    ], style={"flex": "1"}),
 
-        html.Div(id='indicator-selectors'),
-
-        html.H3(id='selected-state-name', style={'display': 'none'}),
-
-        dcc.Download(id="download-figures"),
-        dcc.Store(id='clicked-state-store'),
-        html.Div(id='visualization-panel'),
-
-    ], fluid=True),
-
+    # === Footer ===
     html.Div([
         dbc.Container(
             html.P("© 2025 PopulationCouncil Consulting",
@@ -148,15 +175,21 @@ app.layout = html.Div([
         )
     ], style={
         "backgroundColor": "#2C3E50",
-        "marginTop": "40px"
+        "marginTop": "auto"
     })
-
 ], style={
+    'minHeight': '100vh',
+    'display': 'flex',
+    'flexDirection': 'column',
+    'justifyContent': 'space-between',
     'margin': '0',
     'padding': '0',
     'width': '100%',
     'overflowX': 'hidden'
 })
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 @app.callback(
     Output("download-figures", "data"),
@@ -228,12 +261,39 @@ def download_all_figures(n_clicks, active_tab, hh_type, category, indicators, se
         pdf_bytes = pdf.output(dest="S").encode('latin1')
         return dcc.send_bytes(pdf_bytes, filename="Tribal_Health_Dashboard.pdf")
 
+# Comparison Type selection
 @app.callback(
-    Output('indicator-selectors', 'children'),
-    [Input('state-selection', 'value'),
-     Input('indicator-category-dropdown', 'value')],
-    [State({'type': 'indicator-dropdown', 'index': ALL}, 'value')]
+    Output('category-mode-dropdowns', 'children'),
+    Input('comparison-mode', 'active_tab')
 )
+@app.callback(
+    Output('hidden-category-dropdowns', 'style'),
+    Input('comparison-mode-tabs', 'active_tab')
+)
+def toggle_category_visibility(mode):
+    if mode == 'category':
+        return {'display': 'block'}
+    return {'display': 'none'}
+
+@app.callback(
+    Output('comparison-mode-store', 'data'),
+    Input('btn-indicator', 'n_clicks'),
+    Input('btn-category', 'n_clicks'),
+    prevent_initial_call=True
+)
+def update_comparison_mode(n1, n2):
+    if ctx.triggered_id == "btn-category":
+        return "category"
+    return "indicator"  # default
+
+#Store selected comparison tab
+@app.callback(
+    Output('comparison-mode-store', 'data'),
+    Input('comparison-mode-tabs', 'active_tab')
+)
+def store_comparison_mode(tab):
+    return tab
+
 def update_indicators(selected_state_acronym, selected_category, existing_values):
     if not selected_category:
         return None
@@ -290,28 +350,96 @@ def update_title(selected_state):
     return "India-level View"
 
 @app.callback(
-    Output({'type': 'indicator-dropdown', 'index': ALL}, 'options'),
-    Input({'type': 'indicator-dropdown', 'index': ALL}, 'value'),
-    State('indicator-category-dropdown', 'value'),
-    State('state-selection', 'value')
+    Output('indicator-selectors', 'children'),
+    Input('comparison-mode-store', 'data'),
+    Input('indicator-category-dropdown', 'value'),
+    Input('category-1-dropdown', 'value'),
+    Input('category-2-dropdown', 'value'),
+    Input('state-selection', 'value'),
+    Input({'type': 'indicator-dropdown', 'index': ALL}, 'value')
 )
-def update_indicator_options(selected_values, selected_category, selected_state):
-    data_source = state_data[selected_state] if selected_state else df_state
-    if selected_category:
-        data_source = data_source[data_source['category'] == selected_category]
+def update_indicator_dropdowns(mode, cat_indicator, cat1, cat2, selected_state, selected_values):
+    selected_values = selected_values or [None, None, None, None]
+    selected_values += [None] * (4 - len(selected_values))
 
-    all_indicators = sorted(data_source['indicator_name'].dropna().unique())
-    options_per_dropdown = []
+    dropdowns = []
 
-    for i in range(4):
-        used_elsewhere = set(val for j, val in enumerate(selected_values) if j != i and val)
-        options = [
-            {'label': ind, 'value': ind}
-            for ind in all_indicators
-            if ind not in used_elsewhere or ind == selected_values[i]
-        ]
-        options_per_dropdown.append(options)
-    return options_per_dropdown
+    if mode == 'indicator':
+        # Use single category to populate all 4 dropdowns
+        if not cat_indicator:
+            return html.Div("Please select a category", className="text-muted")
+
+        df = state_data[selected_state] if selected_state else df_state
+        df = df[df['category'] == cat_indicator]
+        indicators = sorted(df["indicator_name"].dropna().unique())
+
+        # Build dropdowns with duplicate filtering logic
+        for i in range(4):
+            used_elsewhere = set(val for j, val in enumerate(selected_values) if j != i and val)
+            options = [
+                {'label': ind, 'value': ind}
+                for ind in indicators
+                if ind not in used_elsewhere or ind == selected_values[i]
+            ]
+            dropdowns.append(
+                dbc.Col(
+                    dcc.Dropdown(
+                        id={'type': 'indicator-dropdown', 'index': i+1},
+                        options=options,
+                        value=selected_values[i],
+                        placeholder=f"Select Indicator {i+1}",
+                        style={"fontSize": "12px"},
+                        optionHeight=50
+                    ),
+                    width=3
+                )
+            )
+
+        return dbc.Row(dropdowns, justify="center", className="mb-3")
+
+    elif mode == 'category':
+        all_categories = [cat1, cat2]
+        df = state_data[selected_state] if selected_state else df_state
+        dropdown_rows = []
+
+        for block_index, category in enumerate(all_categories):
+            if not category:
+                continue
+
+            category_df = df[df['category'] == category]
+            indicators = sorted(category_df["indicator_name"].dropna().unique())
+
+            i1, i2 = block_index * 2, block_index * 2 + 1
+            used_elsewhere_1 = set(val for j, val in enumerate(selected_values) if j != i1 and val)
+            used_elsewhere_2 = set(val for j, val in enumerate(selected_values) if j != i2 and val)
+
+            options1 = [{'label': ind, 'value': ind} for ind in indicators if ind not in used_elsewhere_1 or ind == selected_values[i1]]
+            options2 = [{'label': ind, 'value': ind} for ind in indicators if ind not in used_elsewhere_2 or ind == selected_values[i2]]
+
+            row = dbc.Row([
+                dbc.Col(dcc.Dropdown(
+                    id={'type': 'indicator-dropdown', 'index': i1+1},
+                    options=options1,
+                    value=selected_values[i1],
+                    placeholder=f"{category} - Indicator 1",
+                    style={"fontSize": "12px"},
+                    optionHeight=50
+                ), width=6),
+                dbc.Col(dcc.Dropdown(
+                    id={'type': 'indicator-dropdown', 'index': i2+1},
+                    options=options2,
+                    value=selected_values[i2],
+                    placeholder=f"{category} - Indicator 2",
+                    style={"fontSize": "12px"},
+                    optionHeight=50
+                ), width=6)
+            ], className="mb-2")
+
+            dropdown_rows.append(row)
+
+        return html.Div(dropdown_rows)
+
+    return html.Div("Unknown comparison mode selected", className="text-danger")
 
 @app.callback(
     [Output('violin-1', 'figure'), Output('violin-2', 'figure'),
@@ -796,7 +924,7 @@ Instructions:
         "and tailor the recommendations more specifically for tribal vs non-tribal populations in those states."
     )
 
-    return prompt, refine_prompt
+    return prompt, refine_prompt()
 
 
 @app.callback(
@@ -816,28 +944,62 @@ def switch_tab(*clicks):
             return tab_ids[i]
     return dash.no_update
 
+def highlight_regions(text):
+    state_names = df_state['state_name'].unique().tolist()
+    district_names = df_district['district_id'].unique().tolist()
+    for name in sorted(state_names + district_names, key=len, reverse=True):
+        text = re.sub(fr"\b{re.escape(name)}\b", f"**{name}**", text)
+    return text
+
+@app.callback(
+    Output('comparison-mode-store', 'data'),
+    Input({'type': 'comparison-mode-btn', 'tab': ALL}, 'n_clicks'),
+    Input({'type': 'comparison-mode-btn-cat', 'tab': ALL}, 'n_clicks'),
+    State('main-tabs', 'data'),
+    prevent_initial_call=True
+)
+def update_mode_per_tab(ind_clicks, cat_clicks, active_tab):
+    ctx_id = ctx.triggered_id
+    if isinstance(ctx_id, dict) and ctx_id['tab'] == active_tab:
+        if ctx_id['type'] == 'comparison-mode-btn-cat':
+            return 'category'
+        elif ctx_id['type'] == 'comparison-mode-btn':
+            return 'indicator'
+    return dash.no_update
+
 @app.callback(
     Output('visualization-panel', 'children'),
-    [Input('main-tabs', 'data'),
-     Input({'type': 'indicator-dropdown', 'index': ALL}, 'value'),
-     Input('state-selection', 'value'),
-     Input('indicator-category-dropdown', 'value'),
-     Input('category-selection-type', 'value')]
+    [
+        Input('main-tabs', 'data'),
+        Input('comparison-mode-store', 'data'),
+        Input({'type': 'indicator-dropdown', 'index': ALL}, 'value'),
+        Input('indicator-category-dropdown', 'value'),
+        Input('category-1-dropdown', 'value'),
+        Input('category-2-dropdown', 'value'),
+        Input('state-selection', 'value'),
+        Input('category-selection-type', 'value')
+    ]
 )
-def render_visualization_panel(tab, indicators, selected_state, selected_category, hh_type):
-    indicators = indicators + [None] * (4 - len(indicators))
+def render_visualization_panel(tab, mode, indicators, cat_indicator, cat1, cat2, selected_state, hh_type):
+    indicators = indicators or []
+    indicators += [None] * (4 - len(indicators))
     valid_indicators = [ind for ind in indicators if ind]
 
-    # Select data
+    # Get Data
     df = df_district[df_district['state_acronym'] == selected_state] if selected_state else df_state
-    if selected_category:
-        df = df[df['category'] == selected_category]
-    df = df[df['indicator_name'].isin(valid_indicators)]
     df[hh_type] = pd.to_numeric(df[hh_type], errors='coerce')
 
+    # Filter for Insights
+    selected_category = cat_indicator if mode == 'indicator' else None
+    if mode == 'indicator' and selected_category:
+        df = df[df['category'] == selected_category]
+    elif mode == 'category':
+        df = df[df['category'].isin([cat1, cat2])]
+
+    df = df[df['indicator_name'].isin(valid_indicators)]
     level = "district" if selected_state else "state"
 
-    # Generate agentic prompts
+    # === AI Insights ===
     base_prompt, follow_up_prompt = generate_llm_prompt_from_filters(
         df=df,
         selected_state=state_name_mapping.get(selected_state, selected_state) if selected_state else None,
@@ -846,22 +1008,15 @@ def render_visualization_panel(tab, indicators, selected_state, selected_categor
         level=level
     )
 
-    def remove_duplicate_heading(text):
-        lines = text.strip().splitlines()
-        if len(lines) >= 2 and lines[0].strip().lower() == lines[1].strip().lower():
-            return "\n".join(lines[1:]).strip()
-        return text.strip()
-
-    def highlight_regions(text):
-        state_names = df_state['state_name'].unique().tolist()
-        district_names = df_district['district_id'].unique().tolist()
-        for name in sorted(state_names + district_names, key=len, reverse=True):
-            text = re.sub(fr"\b{re.escape(name)}\b", f"**{name}**", text)
-        return text
+    def clean_llm_response(raw):
+        lines = raw.strip().splitlines()
+        if len(lines) >= 2 and lines[0].lower() == lines[1].lower():
+            lines = lines[1:]
+        return highlight_regions("\n".join(lines))
 
     if not base_prompt:
-        llm_text_cleaned = "No data available to analyze."
-        followup_text_cleaned = ""
+        llm_text = "No data available to analyze."
+        refined_text = ""
     else:
         try:
             chat_msgs = [{"role": "user", "content": base_prompt}]
@@ -875,13 +1030,25 @@ def render_visualization_panel(tab, indicators, selected_state, selected_categor
             else:
                 actions_text = ""
 
+            llm_text = clean_llm_response(insights_text)
+            refined_text = clean_llm_response(actions_text)
         except Exception as e:
-            insights_text = f"Error fetching AI Insights: {str(e)}"
-            actions_text = ""
+            llm_text = f"Error generating insights: {str(e)}"
+            refined_text = ""
 
-        llm_text_cleaned = highlight_regions(remove_duplicate_heading(re.sub(r"<think>.*?</think>", "", insights_text, flags=re.DOTALL)))
-        followup_text_cleaned = highlight_regions(remove_duplicate_heading(re.sub(r"<think>.*?</think>", "", actions_text, flags=re.DOTALL)))
+    # === Comparison Buttons (inside panel) ===
+    comparison_buttons = dbc.Row([
+        dbc.Col(width=2),
+        dbc.Col([
+            dbc.ButtonGroup([
+                dbc.Button("Indicator Comparison", id={'type': 'comparison-mode-btn', 'tab': tab}, color="secondary", outline=(mode != 'indicator'), n_clicks=0),
+                dbc.Button("Category Comparison", id={'type': 'comparison-mode-btn-cat', 'tab': tab}, color="secondary", outline=(mode != 'category'), n_clicks=0),
+            ], size="sm", className="d-flex justify-content-center")
+        ], width=8),
+        dbc.Col(width=2)
+    ], className="mb-3")
 
+    # === Plot Layout Helpers ===
     def make_plot(title, fig_id):
         return dbc.Col([
             html.Div(
@@ -901,28 +1068,8 @@ def render_visualization_panel(tab, indicators, selected_state, selected_categor
         ], md=6)
 
     plots = []
-    if tab == "map-tab":
-        plots = [
-            dbc.Row([make_plot(indicators[0], {'type': 'map', 'index': 1}),
-                     make_plot(indicators[1], {'type': 'map', 'index': 2})]),
-            dbc.Row([make_plot(indicators[2], {'type': 'map', 'index': 3}),
-                     make_plot(indicators[3], {'type': 'map', 'index': 4})])
-        ]
-    elif tab == "bar-tab":
-        plots = [
-            dbc.Row([make_plot(indicators[0], 'plot-1'),
-                     make_plot(indicators[1], 'plot-2')]),
-            dbc.Row([make_plot(indicators[2], 'plot-3'),
-                     make_plot(indicators[3], 'plot-4')])
-        ]
-    elif tab == "violin-tab":
-        plots = [
-            dbc.Row([make_plot(indicators[0], 'violin-1'),
-                     make_plot(indicators[1], 'violin-2')]),
-            dbc.Row([make_plot(indicators[2], 'violin-3'),
-                     make_plot(indicators[3], 'violin-4')])
-        ]
-    elif tab == "bubble-tab":
+
+    if tab == "bubble-tab":
         plots = [dbc.Row([
             dbc.Col([
                 html.Div("Bubble Plot", style={
@@ -932,23 +1079,52 @@ def render_visualization_panel(tab, indicators, selected_state, selected_categor
                     "padding": "6px 10px",
                     "backgroundColor": "#f8f9fa",
                     "border": "1px solid #ced4da",
-                    "borderRadius": "6px",
-                    "whiteSpace": "normal"
+                    "borderRadius": "6px"
                 }),
                 dcc.Loading(dcc.Graph(id='bubble-plot', config={"displayModeBar": False}))
             ], md=9),
             dbc.Col(html.Div(id='bubble-legend'), md=3)
         ])]
+    else:
+        if mode == 'indicator':
+            plots = [
+                dbc.Row([
+                    make_plot(indicators[0], {'type': tab.split('-')[1], 'index': 1}),
+                    make_plot(indicators[1], {'type': tab.split('-')[1], 'index': 2})
+                ]),
+                dbc.Row([
+                    make_plot(indicators[2], {'type': tab.split('-')[1], 'index': 3}),
+                    make_plot(indicators[3], {'type': tab.split('-')[1], 'index': 4})
+                ])
+            ]
+        else:
+            if cat1:
+                plots.append(html.H5(cat1, className="mt-3 mb-2"))
+                plots.append(dbc.Row([
+                    make_plot(indicators[0], {'type': tab.split('-')[1], 'index': 1})
+                ]))
+                plots.append(dbc.Row([
+                    make_plot(indicators[1], {'type': tab.split('-')[1], 'index': 2})
+                ]))
+            if cat2:
+                plots.append(html.H5(cat2, className="mt-3 mb-2"))
+                plots.append(dbc.Row([
+                    make_plot(indicators[2], {'type': tab.split('-')[1], 'index': 3})
+                ]))
+                plots.append(dbc.Row([
+                    make_plot(indicators[3], {'type': tab.split('-')[1], 'index': 4})
+                ]))
 
     return html.Div([
+        comparison_buttons,
         *plots,
         html.Hr(),
         html.Div([
             html.H4("AI Insights (Initial)", style={"marginTop": "30px"}),
-            dcc.Markdown(llm_text_cleaned, style={"whiteSpace": "pre-wrap"}),
+            dcc.Markdown(llm_text, style={"whiteSpace": "pre-wrap"}),
             html.Br(),
             html.H4("AI Insights (Refined)", style={"marginTop": "20px"}),
-            dcc.Markdown(followup_text_cleaned, style={"whiteSpace": "pre-wrap"})
+            dcc.Markdown(refined_text, style={"whiteSpace": "pre-wrap"})
         ])
     ])
 

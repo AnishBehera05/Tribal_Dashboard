@@ -1,115 +1,115 @@
-indicator_id,indicator_name,categories_id,indicator_type,indicator_type_id
-1,"Sex ratio of the total population(females per 1,000 males)",1,Neutral,1
-2,"Sex ratio at birth for children(0-6 years) born in the last five years(females per 1,000 males)",1,Neutral,1
-3,Population(6 years and above) who ever attended school(Male) (%),1,Neutral,1
-4,Population(6 years and above) who ever attended school(Female) (%),1,Neutral,1
-5,Women(15-49 years) with 10 or more years of schooling (%),1,Positive,2
-6,Women(20-24 years) married before age 18 years (%),1,Negative,3
-7,Household population having an Aadhaar Card (%),1,Neutral,1
-8,Households having BPL card (%),1,Neutral,1
-9,Households owning agricultural land (%),1,Neutral,1
-10,Households with electricity (%),1,Positive,2
-11,Households with an improved drinking water source (%),1,Positive,2
-12,Households using improved sanitation facility (%),1,Positive,2
-13,"Households with no toilet facility, defecating in open space/field (%)",1,Negative,3
-14,Households using clean fuel for cooking (%),1,Positive,2
-15,Households having pucca house (%),1,Neutral,1
-16,Households with presence of water and soap/detergent at handwashing place (%),1,Neutral,1
-17,Households with any usual member covered by a health scheme or health insurance (%),1,Neutral,1
-18,Household population having any form of disability (hearing/speech/visual/mental/locomotive/other) (%),1,Negative,3
-19,Households having access to internet (%),2,Positive,2
-20,Households owning a mobile/telephone (%),2,Positive,2
-21,"Women(15-49 years) with exposure to mass media i.e.,newspaper,TV,radio,watch movie in theatre (%)",2,Positive,2
-22,Women(15-49 years) using internet (%),2,Positive,2
-23,Menstruating woman(15-24 years) using hygienic method for blood stain prevention during menstruation (%),3,Positive,2
-24,Currently married women(15-49 years) using any family planning method (%),3,Positive,2
-25,Currently married women(15-49 years) using female sterilization (%),3,Neutral,1
-26,Currently married women(15-49 years) using male sterilization (%),3,Neutral,1
-27,Currently married women(15-49 years) using modern contraceptive obtained from public health facility (%),3,Neutral,1
-28,Total unmet need among currently married women(15-49 years) (%),3,Negative,3
-29,Total unmet need for spacing among currently married women(15-49 years) (%),3,Negative,3
-30,Women(15-19 years) who were already mothers or pregnant at the time of the survey (%),4,Neutral,1
-31,Mothers who had antenatal check-up in the first trimester (%),4,Neutral,1
-32,Mothers who had at least four antenatal care visits during last pregnancy (%),4,Positive,2
-33,Mothers who consumed iron & folic acid for 100 days or more when they were pregnant (%),4,Neutral,1
-34,Mothers who had full antenatal care (%),4,Positive,2
-35,Registered pregnancies for which the mother received Mother and Child Protection card (%),4,Neutral,1
-36,Mothers(15-49 years) who received advice on breastfeeding from any provider during pregnancy (%),4,Positive,2
-37,Mothers(15-49 years) who received health and nutrition education from the AWC during pregnancy (%),4,Positive,2
-38,Mothers(15-49 years) who received food supplements from the anganwadi center during pregnancy (%),4,Neutral,1
-39,Institutional births (%),5,Positive,2
-40,Institutional births in public facility (%),5,Positive,2
-41,Births delivered by caesarean section (%),5,Neutral,1
-42,Home births that were conducted by skilled health personnel (%),5,Neutral,1
-43,Births in a public health facility delivered by caesarean section (%),5,Neutral,1
-44,Mothers who received financial assistance under Janani Suraksha Yojana for births delivered in an institution (%),5,Positive,2
-45,Average out of pocket expenditure per delivery in ANY health facility in INR,5,Neutral,1
-46,Women who had first postnatal check-up within two days (%),6,Neutral,1
-47,Children born at home within the five years preceding the survey received PNC within 24 hours of delivery (%),6,Neutral,1
-48,Children under age 5 years whose birth was registered (%),7,Neutral,1
-49,"Children(12-23 months) fully immunized (BCG, measles, and 3 doses of Polio and DPT) (%)",7,Positive,2
-50,Children(12-23 months) who have received measles vaccine (%),7,Neutral,1
-51,Children(9-59 months) who received a vitamin A dose in last six months (%),7,Neutral,1
-52,"Children under age five years suffered from diarrhoea in the last two weeks, preceding the survey (%)",7,Negative,3
-53,Advice or treatment sought for children suffering from diarrhoea in last two weeks (%),7,Neutral,1
-54,Children with diarrhoea in last two weeks who received ORS (%),7,Neutral,1
-55,Children with diarrhoea in the last two weeks who received zinc (%),7,Neutral,1
-56,Children with diarrhoea in the last two weeks who received both ORS and zinc (%),7,Neutral,1
-57,Prevalence of symptoms of acute respiratory infection among children under age 5 years within the last two weeks preceding the survey (%),7,Neutral,1
-58,Children under age 5 years with ARI Symptoms in last 2 weeks who sought medical treatment same/next day (%),7,Neutral,1
-59,Children with low birth weight (<2500 g) (for births in the 5 years before the survey) (%),8,Negative,3
-60,Children under age three years breastfed within one hour of birth (%),8,Neutral,1
-61,Children exclusively breastfed for 0-6 months (%),8,Neutral,1
-62,Total children(6-23 months) receiving an adequate diet (%),8,Positive,2
-63,Children under 5 years who are stunted(height-for-age) (%),8,Negative,3
-64,Children under 5 years who are wasted(weight-for-height) (%),8,Negative,3
-65,Children under 5 years who are severely wasted(weight-for-height) (%),8,Negative,3
-66,Children under 5 years who are underweight(weight-for-age) (%),8,Negative,3
-67,Children under 5 years who are overweight(weight-for-height) (%),8,Negative,3
-68,Children aged 6 - 59 months who are anaemic (<11.0g/dl) (%),8,Negative,3
-69,Children under age 6 years who received food supplimentation from anganwadi centre in past 12 months (%),8,Neutral,1
-70,Mothers of children under age 6 years who received any services from AWC while breastfeeding (%),8,Positive,2
-71,Children(6-59 months) who given deworming medication in past 6 months (%),8,Positive,2
-72,Children(6-59 months) who given iron supplimentation in past 7 days (%),8,Neutral,1
-73,Children(0-59 months) who were weighed at anganwadi centre in last 12 months (%),8,Neutral,1
-74,Children(0-59 months) who were weighed at anganwadi centre in last 12 months and their mother were counselled from AWC (%),8,Neutral,1
-75,Women(15-49 years) whose BMI is below normal (BMI < 18.5 kg/m2) (%),9,Negative,3
-76,Men(15-49 years) whose BMI is below normal (BMI < 18.5 kg/m2) (%),9,Negative,3
-77,Women(15-49 years)  who are overweight or obese (BMI >= 25.0 kg/m2) (%),9,Negative,3
-78,Men(15-49 years) who are overweight or obese (BMI >= 25.0 kg/m2) (%),9,Negative,3
-79,Men(15-49 years) with increased risk of metabolic complication(Waist-to-hip ratio>0.90 cm) (%),9,Neutral,1
-80,Women(15-49 years) with increased risk of metabolic complication(Waist-to-hip ratio>0.85 cm) (%),9,Neutral,1
-81,Pregnant women(15-49 years) who are anaemic(<11.0 g/dl) (%),9,Negative,3
-82,Women(15-49 years) years who are anaemic(<12.0 g/dl) (%),9,Negative,3
-83,Women(15-49 years) with high blood sugar level(>140 mg/dl) or taking medicine to control blood sugar level (%),10,Neutral,1
-84,Men(15-49 years) with high blood sugar level(>140 mg/dl) or taking medicine to control blood sugar level (%),10,Neutral,1
-85,Women(15-49 years) with elevated blood pressure (Systolic >=140 mm of Hg and/or Diastolic >=90 mm of Hg) or taking medicine to control blood pressure (%),11,Negative,3
-86,Men(15-49 years) with elevated  blood pressure (Systolic >=140 mm of Hg and/or Diastolic >=90 mm of Hg) or taking medicine to control blood pressure,11,Neutral,3
-87,Women age 15 years and above who use any kind of tobacco (%),12,Negative,3
-88,Men age 15 years and above who use any kind of tobacco (%),12,Negative,3
-89,Women age 15 years and above who consume alcohol (%),12,Negative,3
-90,Men age 15 years and above who consume alcohol (%),12,Negative,3
-91,Households with at least one mosquito net (%),13,Neutral,1
-92,"Survey population suffering from Tuberculosis(per 100,000 population)",13,Neutral,1
-93,Women(15-49 years) who have ever heard of tuberculosis (%),13,Neutral,1
-94,Men(15-49 years) who have ever heard of tuberculosis (%),13,Neutral,1
-95,Women(15-49 years) who worked in the last 12 months and were paid in cash (%),14,Neutral,1
-96,Women owning a house and/or land (alone or jointly with others) (%),14,Positive,2
-97,Women having a bank or savings account that they themselves use (%),14,Positive,2
-98,Women having a mobile phone that they themselves use (%),14,Positive,2
-99,Ever-married women(18-49 years) who have experienced physical violence ever (%),15,Negative,3
-100,Ever-married women(18-49 years) who have experienced physical violence in past 12 months (%),15,Negative,3
-101,Ever-married women(18-49 years) who have experienced physical violence during any pregnancy (%),15,Negative,3
-102,Young women(18-29 years) who experienced sexual violence by age 18 (%),15,Negative,3
-103,Women(15-49) ever heard of a sexually transmitted infection (%),16,Neutral,1
-104,Men(15-54 years) ever heard of a sexually transmitted infection (%),16,Neutral,1
-105,Women(15-49) ever heard of HIV-AIDS (%),16,Neutral,1
-106,Men(15-54 years) ever heard of a HIV-AIDS (%),16,Neutral,1
-107,Women(15-49 years) who have comprehensive knowledge about HIV (%),16,Positive,2
-108,Men(15-54 years) who have comprehensive knowledge about HIV (%),16,Positive,2
-109,Women(15-24 years) whose Body Mass Index is below normal (BMI < 18.5 kg/m2) (%),17,Negative,3
-110,Women (15-24 years) years who are anaemic (<12.0 g/dl) (%),17,Negative,3
-111,Women (15-24 years) with high Blood sugar level (>140 mg/dl) or taking medicine to control blood sugar level (%),17,Neutral,1
-112,Men(15-24 years) with high Blood sugar level (>140 mg/dl) or taking medicine to control blood sugar level (%),17,Neutral,1
-113,Women(15-24 years) with elevated blood pressure (Systolic >=140 mm of Hg and/or Diastolic >=90 mm of Hg) or taking medicine to control blood pressure (%),17,Negative,3
-114,Men(15-24 years) with elevated blood pressure (Systolic >=140 mm of Hg and/or Diastolic >=90 mm of Hg) or taking medicine to control blood pressure (%),17,Negative,3
+indicator_id,indicator_name,indicator_type,indicator_type_id
+1,"Sex ratio of the total population(females per 1,000 males)",Neutral,1
+2,"Sex ratio at birth for children(0-6 years) born in the last five years(females per 1,000 males)",Neutral,1
+3,Population(6 years and above) who ever attended school(Male) (%),Neutral,1
+4,Population(6 years and above) who ever attended school(Female) (%),Neutral,1
+5,Women(15-49 years) with 10 or more years of schooling (%),Positive,2
+6,Women(20-24 years) married before age 18 years (%),Negative,3
+7,Household population having an Aadhaar Card (%),Neutral,1
+8,Households having BPL card (%),Neutral,1
+9,Households owning agricultural land (%),Neutral,1
+10,Households with electricity (%),Positive,2
+11,Households with an improved drinking water source (%),Positive,2
+12,Households using improved sanitation facility (%),Positive,2
+13,"Households with no toilet facility, defecating in open space/field (%)",Negative,3
+14,Households using clean fuel for cooking (%),Positive,2
+15,Households having pucca house (%),Neutral,1
+16,Households with presence of water and soap/detergent at handwashing place (%),Neutral,1
+17,Households with any usual member covered by a health scheme or health insurance (%),Neutral,1
+18,Household population having any form of disability (hearing/speech/visual/mental/locomotive/other) (%),Negative,3
+19,Households having access to internet (%),Positive,2
+20,Households owning a mobile/telephone (%),Positive,2
+21,"Women(15-49 years) with exposure to mass media i.e.,newspaper,TV,radio,watch movie in theatre (%)",Positive,2
+22,Women(15-49 years) using internet (%),Positive,2
+23,Menstruating woman(15-24 years) using hygienic method for blood stain prevention during menstruation (%),Positive,2
+24,Currently married women(15-49 years) using any family planning method (%),Positive,2
+25,Currently married women(15-49 years) using female sterilization (%),Neutral,1
+26,Currently married women(15-49 years) using male sterilization (%),Neutral,1
+27,Currently married women(15-49 years) using modern contraceptive obtained from public health facility (%),Neutral,1
+28,Total unmet need among currently married women(15-49 years) (%),Negative,3
+29,Total unmet need for spacing among currently married women(15-49 years) (%),Negative,3
+30,Women(15-19 years) who were already mothers or pregnant at the time of the survey (%),Neutral,1
+31,Mothers who had antenatal check-up in the first trimester (%),Neutral,1
+32,Mothers who had at least four antenatal care visits during last pregnancy (%),Positive,2
+33,Mothers who consumed iron & folic acid for 100 days or more when they were pregnant (%),Neutral,1
+34,Mothers who had full antenatal care (%),Positive,2
+35,Registered pregnancies for which the mother received Mother and Child Protection card (%),Neutral,1
+36,Mothers(15-49 years) who received advice on breastfeeding from any provider during pregnancy (%),Positive,2
+37,Mothers(15-49 years) who received health and nutrition education from the AWC during pregnancy (%),Positive,2
+38,Mothers(15-49 years) who received food supplements from the anganwadi center during pregnancy (%),Neutral,1
+39,Institutional births (%),Positive,2
+40,Institutional births in public facility (%),Positive,2
+41,Births delivered by caesarean section (%),Neutral,1
+42,Home births that were conducted by skilled health personnel (%),Neutral,1
+43,Births in a public health facility delivered by caesarean section (%),Neutral,1
+44,Mothers who received financial assistance under Janani Suraksha Yojana for births delivered in an institution (%),Positive,2
+45,Average out of pocket expenditure per delivery in ANY health facility in INR,Neutral,1
+46,Women who had first postnatal check-up within two days (%),Neutral,1
+47,Children born at home within the five years preceding the survey received PNC within 24 hours of delivery (%),Neutral,1
+48,Children under age 5 years whose birth was registered (%),Neutral,1
+49,"Children(12-23 months) fully immunized (BCG, measles, and 3 doses of Polio and DPT) (%)",Positive,2
+50,Children(12-23 months) who have received measles vaccine (%),Neutral,1
+51,Children(9-59 months) who received a vitamin A dose in last six months (%),Neutral,1
+52,"Children under age five years suffered from diarrhoea in the last two weeks, preceding the survey (%)",Negative,3
+53,Advice or treatment sought for children suffering from diarrhoea in last two weeks (%),Neutral,1
+54,Children with diarrhoea in last two weeks who received ORS (%),Neutral,1
+55,Children with diarrhoea in the last two weeks who received zinc (%),Neutral,1
+56,Children with diarrhoea in the last two weeks who received both ORS and zinc (%),Neutral,1
+57,Prevalence of symptoms of acute respiratory infection among children under age 5 years within the last two weeks preceding the survey (%),Neutral,1
+58,Children under age 5 years with ARI Symptoms in last 2 weeks who sought medical treatment same/next day (%),Neutral,1
+59,Children with low birth weight (<2500 g) (for births in the 5 years before the survey) (%),Negative,3
+60,Children under age three years breastfed within one hour of birth (%),Neutral,1
+61,Children exclusively breastfed for 0-6 months (%),Neutral,1
+62,Total children(6-23 months) receiving an adequate diet (%),Positive,2
+63,Children under 5 years who are stunted(height-for-age) (%),Negative,3
+64,Children under 5 years who are wasted(weight-for-height) (%),Negative,3
+65,Children under 5 years who are severely wasted(weight-for-height) (%),Negative,3
+66,Children under 5 years who are underweight(weight-for-age) (%),Negative,3
+67,Children under 5 years who are overweight(weight-for-height) (%),Negative,3
+68,Children aged 6 - 59 months who are anaemic (<11.0g/dl) (%),Negative,3
+69,Children under age 6 years who received food supplimentation from anganwadi centre in past 12 months (%),Neutral,1
+70,Mothers of children under age 6 years who received any services from AWC while breastfeeding (%),Positive,2
+71,Children(6-59 months) who given deworming medication in past 6 months (%),Positive,2
+72,Children(6-59 months) who given iron supplimentation in past 7 days (%),Neutral,1
+73,Children(0-59 months) who were weighed at anganwadi centre in last 12 months (%),Neutral,1
+74,Children(0-59 months) who were weighed at anganwadi centre in last 12 months and their mother were counselled from AWC (%),Neutral,1
+75,Women(15-49 years) whose BMI is below normal (BMI < 18.5 kg/m2) (%),Negative,3
+76,Men(15-49 years) whose BMI is below normal (BMI < 18.5 kg/m2) (%),Negative,3
+77,Women(15-49 years)  who are overweight or obese (BMI >= 25.0 kg/m2) (%),Negative,3
+78,Men(15-49 years) who are overweight or obese (BMI >= 25.0 kg/m2) (%),Negative,3
+79,Men(15-49 years) with increased risk of metabolic complication(Waist-to-hip ratio>0.90 cm) (%),Neutral,1
+80,Women(15-49 years) with increased risk of metabolic complication(Waist-to-hip ratio>0.85 cm) (%),Neutral,1
+81,Pregnant women(15-49 years) who are anaemic(<11.0 g/dl) (%),Negative,3
+82,Women(15-49 years) years who are anaemic(<12.0 g/dl) (%),Negative,3
+83,Women(15-49 years) with high blood sugar level(>140 mg/dl) or taking medicine to control blood sugar level (%),Neutral,1
+84,Men(15-49 years) with high blood sugar level(>140 mg/dl) or taking medicine to control blood sugar level (%),Neutral,1
+85,Women(15-49 years) with elevated blood pressure (Systolic >=140 mm of Hg and/or Diastolic >=90 mm of Hg) or taking medicine to control blood pressure (%),Negative,3
+86,Men(15-49 years) with elevated  blood pressure (Systolic >=140 mm of Hg and/or Diastolic >=90 mm of Hg) or taking medicine to control blood pressure,Neutral,3
+87,Women age 15 years and above who use any kind of tobacco (%),Negative,3
+88,Men age 15 years and above who use any kind of tobacco (%),Negative,3
+89,Women age 15 years and above who consume alcohol (%),Negative,3
+90,Men age 15 years and above who consume alcohol (%),Negative,3
+91,Households with at least one mosquito net (%),Neutral,1
+92,"Survey population suffering from Tuberculosis(per 100,000 population)",Neutral,1
+93,Women(15-49 years) who have ever heard of tuberculosis (%),Neutral,1
+94,Men(15-49 years) who have ever heard of tuberculosis (%),Neutral,1
+95,Women(15-49 years) who worked in the last 12 months and were paid in cash (%),Neutral,1
+96,Women owning a house and/or land (alone or jointly with others) (%),Positive,2
+97,Women having a bank or savings account that they themselves use (%),Positive,2
+98,Women having a mobile phone that they themselves use (%),Positive,2
+99,Ever-married women(18-49 years) who have experienced physical violence ever (%),Negative,3
+100,Ever-married women(18-49 years) who have experienced physical violence in past 12 months (%),Negative,3
+101,Ever-married women(18-49 years) who have experienced physical violence during any pregnancy (%),Negative,3
+102,Young women(18-29 years) who experienced sexual violence by age 18 (%),Negative,3
+103,Women(15-49) ever heard of a sexually transmitted infection (%),Neutral,1
+104,Men(15-54 years) ever heard of a sexually transmitted infection (%),Neutral,1
+105,Women(15-49) ever heard of HIV-AIDS (%),Neutral,1
+106,Men(15-54 years) ever heard of a HIV-AIDS (%),Neutral,1
+107,Women(15-49 years) who have comprehensive knowledge about HIV (%),Positive,2
+108,Men(15-54 years) who have comprehensive knowledge about HIV (%),Positive,2
+109,Women(15-24 years) whose Body Mass Index is below normal (BMI < 18.5 kg/m2) (%),Negative,3
+110,Women (15-24 years) years who are anaemic (<12.0 g/dl) (%),Negative,3
+111,Women (15-24 years) with high Blood sugar level (>140 mg/dl) or taking medicine to control blood sugar level (%),Neutral,1
+112,Men(15-24 years) with high Blood sugar level (>140 mg/dl) or taking medicine to control blood sugar level (%),Neutral,1
+113,Women(15-24 years) with elevated blood pressure (Systolic >=140 mm of Hg and/or Diastolic >=90 mm of Hg) or taking medicine to control blood pressure (%),Negative,3
+114,Men(15-24 years) with elevated blood pressure (Systolic >=140 mm of Hg and/or Diastolic >=90 mm of Hg) or taking medicine to control blood pressure (%),Negative,3
